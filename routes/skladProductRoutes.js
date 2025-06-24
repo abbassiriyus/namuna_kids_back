@@ -17,13 +17,13 @@ router.get('/', verifyToken, async (req, res) => {
 
 // ✅ POST — yangi mahsulot qo‘shish
 router.post('/', verifyToken, async (req, res) => {
-  const { hajm, hajm_birlik } = req.body;
+  const { hajm, hajm_birlik,nomi } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO sklad_product (hajm, hajm_birlik) 
-       VALUES ($1, $2) 
+      `INSERT INTO sklad_product (hajm, hajm_birlik,nomi) 
+       VALUES ($1, $2, $3) 
        RETURNING *`,
-      [hajm, hajm_birlik]
+      [hajm, hajm_birlik,nomi]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -34,15 +34,15 @@ router.post('/', verifyToken, async (req, res) => {
 // ✅ PUT — mahsulotni yangilash
 router.put('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { hajm, hajm_birlik } = req.body;
+  const { hajm, hajm_birlik,nomi } = req.body;
 
   try {
     const result = await pool.query(
       `UPDATE sklad_product 
-       SET hajm = $1, hajm_birlik = $2, updated_at = CURRENT_TIMESTAMP 
-       WHERE id = $3 
+       SET hajm = $1, hajm_birlik = $2,nomi=$3, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $4 
        RETURNING *`,
-      [hajm, hajm_birlik, id]
+      [hajm, hajm_birlik,nomi, id]
     );
     res.status(200).json(result.rows[0]);
   } catch (err) {

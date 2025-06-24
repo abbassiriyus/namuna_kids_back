@@ -5,13 +5,26 @@ const verifyToken = require('../middleware/verifyToken');
 
 // 📥 GET: barcha bolalar
 router.get('/', verifyToken, async (req, res) => {
+  const { is_active } = req.query;
+
   try {
-    const result = await pool.query('SELECT * FROM bola ORDER BY id DESC');
+    let query = 'SELECT * FROM bola';
+    let params = [];
+
+    if (is_active !== undefined) {
+      query += ' WHERE is_active = $1';
+      params.push(is_active === 'true' ? true : false); // stringni boolean ga o‘giradi
+    }
+
+    query += ' ORDER BY id DESC';
+
+    const result = await pool.query(query, params);
     res.status(200).json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ➕ POST: yangi bola qo‘shish
 router.post('/', verifyToken, async (req, res) => {
@@ -23,10 +36,10 @@ router.post('/', verifyToken, async (req, res) => {
     oylik_toliv,
     balans,
     holati,
-    ota_FISH,
+    ota_fish,
     ota_phone,
     ota_pasport,
-    ona_FISH,
+    ona_fish,
     ona_phone,
     ona_pasport,
     qoshimcha_phone,
@@ -38,7 +51,7 @@ router.post('/', verifyToken, async (req, res) => {
     const result = await pool.query(
       `INSERT INTO bola (
         username, metrka, guruh_id, tugilgan_kun, oylik_toliv, balans, holati,
-        ota_FISH, ota_phone, ota_pasport, ona_FISH, ona_phone, ona_pasport,
+        ota_fish, ota_phone, ota_pasport, ona_fish, ona_phone, ona_pasport,
         qoshimcha_phone, address, description
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7,
@@ -47,7 +60,7 @@ router.post('/', verifyToken, async (req, res) => {
       ) RETURNING *`,
       [
         username, metrka, guruh_id, tugilgan_kun, oylik_toliv, balans, holati,
-        ota_FISH, ota_phone, ota_pasport, ona_FISH, ona_phone, ona_pasport,
+        ota_fish, ota_phone, ota_pasport, ona_fish, ona_phone, ona_pasport,
         qoshimcha_phone, address, description
       ]
     );
@@ -68,10 +81,10 @@ router.put('/:id', verifyToken, async (req, res) => {
     oylik_toliv,
     balans,
     holati,
-    ota_FISH,
+    ota_fish,
     ota_phone,
     ota_pasport,
-    ona_FISH,
+    ona_fish,
     ona_phone,
     ona_pasport,
     qoshimcha_phone,
@@ -89,10 +102,10 @@ router.put('/:id', verifyToken, async (req, res) => {
         oylik_toliv = $5,
         balans = $6,
         holati = $7,
-        ota_FISH = $8,
+        ota_fish = $8,
         ota_phone = $9,
         ota_pasport = $10,
-        ona_FISH = $11,
+        ona_fish = $11,
         ona_phone = $12,
         ona_pasport = $13,
         qoshimcha_phone = $14,
@@ -103,7 +116,7 @@ router.put('/:id', verifyToken, async (req, res) => {
       RETURNING *`,
       [
         username, metrka, guruh_id, tugilgan_kun, oylik_toliv, balans, holati,
-        ota_FISH, ota_phone, ota_pasport, ona_FISH, ona_phone, ona_pasport,
+        ota_fish, ota_phone, ota_pasport, ona_fish, ona_phone, ona_pasport,
         qoshimcha_phone, address, description, id
       ]
     );

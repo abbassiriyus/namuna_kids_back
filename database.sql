@@ -57,19 +57,62 @@ CREATE TABLE oylik_type(
 );
 CREATE TABLE sklad_product(
     id SERIAL PRIMARY KEY,
-    hajm integer NOT NULL,
-    hajm_birlik VARCHAR(50) NOT NULL,
+    nomi VARCHAR(100) NOT NULL,  --kartoshka
+    hajm integer NOT NULL,  --1
+    hajm_birlik VARCHAR(50) NOT NULL, --kg
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE sklad_product_taktic(
     id SERIAL PRIMARY KEY,
-    hajm integer NOT NULL,
-    sklad_product_id integer NOT NULL,
+    hajm integer NOT NULL, --yangi qoshilayapgan maxsulot
+    sklad_product_id integer NOT NULL, --qaysi productga tegishli
+    narx integer NOT NULL,
+    description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
+CREATE TABLE chiqim_qoshimcha(
+    id SERIAL PRIMARY KEY,
+    price integer NOT NULL, --yangi qoshilayapgan maxsulot
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+)
+CREATE TABLE chiqim_ombor (
+    id SERIAL PRIMARY KEY,
+    hajm INTEGER NOT NULL, -- yangi qo‘shilayotgan mahsulot
+    sklad_product_id INTEGER NOT NULL, -- qaysi productga tegishli
+    description TEXT,
+    chiqim_sana TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE chiqim_maishiy(
+    id SERIAL PRIMARY KEY,
+    hajm integer NOT NULL, --yangi qoshilayapgan maxsulot
+    sklad_product_id integer NOT NULL, --qaysi productga tegishli
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+)
+CREATE TABLE sklad_maishiy(
+    id SERIAL PRIMARY KEY,
+    nomi VARCHAR(100) NOT NULL,  --kartoshka
+    hajm integer NOT NULL,  --1
+    hajm_birlik VARCHAR(50) NOT NULL, --kg
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE kirim_maishiy(
+    id SERIAL PRIMARY KEY,
+    hajm integer NOT NULL, --yangi qoshilayapgan maxsulot
+    sklad_product_id integer NOT NULL, --qaysi productga tegishli
+    narx integer NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 CREATE TABLE guruh(
  id SERIAL PRIMARY KEY,
  name VARCHAR(50),
@@ -77,7 +120,22 @@ xodim_id INT NOT NULL,
 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
+CREATE TABLE darssana (
+  id SERIAL PRIMARY KEY,
+  mavzu VARCHAR(150) NOT NULL,
+  sana DATE NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE bola_kun (
+  id SERIAL PRIMARY KEY,
+  holati INTEGER NOT NULL DEFAULT 0,
+  bola_id INTEGER NOT NULL,
+  darssana_id INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (bola_id, darssana_id)
+);
 CREATE TABLE bola(
  id SERIAL PRIMARY KEY,
  username VARCHAR(100) NOT NULL,
@@ -96,10 +154,29 @@ CREATE TABLE bola(
  qoshimcha_phone VARCHAR(50),
  address VARCHAR(300),
  description TEXT,
+ is_active BOOLEAN NOT NULL DEFAULT TRUE,
  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE taom (
+  id SERIAL PRIMARY KEY,
+  nomi VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE taom_ingredient (
+  id SERIAL PRIMARY KEY,
+  taom_id INTEGER REFERENCES taom(id) ON DELETE CASCADE,
+  sklad_product_id INTEGER REFERENCES sklad_product(id),
+  miqdor NUMERIC(10, 2) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+ALTER SEQUENCE taom_id_seq OWNED BY taom.id;
+GRANT USAGE, SELECT ON SEQUENCE taom_id_seq TO abbasuz3_user;
 
+ALTER SEQUENCE taom_ingredient_id_seq OWNED BY taom_ingredient.id;
+GRANT USAGE, SELECT ON SEQUENCE taom_ingredient_id_seq TO abbasuz3_user;
 ALTER SEQUENCE admin_id_seq OWNED BY admin.id;
 GRANT USAGE, SELECT ON SEQUENCE admin_id_seq TO abbasuz3_user;
 
@@ -133,3 +210,31 @@ GRANT USAGE, SELECT ON SEQUENCE guruh_id_seq TO abbasuz3_user;
 
 ALTER SEQUENCE bola_id_seq OWNED BY bola.id;
 GRANT USAGE, SELECT ON SEQUENCE bola_id_seq TO abbasuz3_user;
+
+
+
+ALTER SEQUENCE chiqim_qoshimcha_id_seq OWNED BY chiqim_qoshimcha.id;
+GRANT USAGE, SELECT ON SEQUENCE chiqim_qoshimcha_id_seq TO abbasuz3_user;
+
+ALTER SEQUENCE chiqim_ombor_id_seq OWNED BY chiqim_ombor.id;
+GRANT USAGE, SELECT ON SEQUENCE chiqim_ombor_id_seq TO abbasuz3_user;
+
+ALTER SEQUENCE chiqim_maishiy_id_seq OWNED BY chiqim_maishiy.id;
+GRANT USAGE, SELECT ON SEQUENCE chiqim_maishiy_id_seq TO abbasuz3_user;
+
+ALTER SEQUENCE sklad_maishiy_id_seq OWNED BY sklad_maishiy.id;
+GRANT USAGE, SELECT ON SEQUENCE sklad_maishiy_id_seq TO abbasuz3_user;
+
+ALTER SEQUENCE kirim_maishiy_id_seq OWNED BY kirim_maishiy.id;
+GRANT USAGE, SELECT ON SEQUENCE kirim_maishiy_id_seq TO abbasuz3_user;
+
+
+
+
+
+ALTER SEQUENCE darssana_id_seq OWNED BY darssana.id;
+GRANT USAGE, SELECT ON SEQUENCE darssana_id_seq TO abbasuz3_user;
+
+ALTER SEQUENCE bola_kun_id_seq OWNED BY bola_kun.id;
+GRANT USAGE, SELECT ON SEQUENCE bola_kun_id_seq TO abbasuz3_user;
+
