@@ -5,18 +5,38 @@ const verifyToken = require('../middleware/verifyToken');
 
 // ✅ GET — barcha bonuslar (xodim nomi bilan)
 router.get('/', verifyToken, async (req, res) => {
+  const { month } = req.query; // foydalanuvchi tanlagan oy, masalan: 2025-06
+
   try {
-    const result = await pool.query(`
-      SELECT b.*, x.name AS xodim_nomi
-      FROM bonus b
-      LEFT JOIN xodim x ON b.xodim_id = x.id
-      ORDER BY b.id DESC
-    `);
+    let result;
+
+    if (month) {
+      // Faqat shu oydagi bonuslar
+      result = await pool.query(`
+        SELECT b.*, x.name AS xodim_nomi
+        FROM bonus b
+        LEFT JOIN xodim x ON b.xodim_id = x.id
+        WHERE TO_CHAR(b.created_at, 'YYYY-MM') = $1
+        ORDER BY b.id DESC
+      `, [month]);
+    } else {
+      // Hamma bonuslar
+      result = await pool.query(`
+        SELECT b.*, x.name AS xodim_nomi
+        FROM bonus b
+        LEFT JOIN xodim x ON b.xodim_id = x.id
+        ORDER BY b.id DESC
+      `);
+    }
+
     res.status(200).json(result.rows);
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ✅ POST — yangi bonus qo‘shish
 router.post('/', verifyToken, async (req, res) => {

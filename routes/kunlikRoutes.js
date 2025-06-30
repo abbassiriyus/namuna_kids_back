@@ -5,18 +5,38 @@ const verifyToken = require('../middleware/verifyToken');
 
 // ✅ GET — barcha kunlik ish haqlar (xodim nomi bilan)
 router.get('/', verifyToken, async (req, res) => {
+  const { month } = req.query; // YYYY-MM format kutiladi
+
   try {
-    const result = await pool.query(`
-      SELECT k.*, x.name AS xodim_nomi
-      FROM kunlik k
-      LEFT JOIN xodim x ON k.xodim_id = x.id
-      ORDER BY k.id DESC
-    `);
+    let result;
+
+    if (month) {
+      // Faqat tanlangan oydagi kunliklar
+      result = await pool.query(`
+        SELECT k.*, x.name AS xodim_nomi
+        FROM kunlik k
+        LEFT JOIN xodim x ON k.xodim_id = x.id
+        WHERE TO_CHAR(k.created_at, 'YYYY-MM') = $1
+        ORDER BY k.id DESC
+      `, [month]);
+    } else {
+      // Hamma oyning kunliklari
+      result = await pool.query(`
+        SELECT k.*, x.name AS xodim_nomi
+        FROM kunlik k
+        LEFT JOIN xodim x ON k.xodim_id = x.id
+        ORDER BY k.id DESC
+      `);
+    }
+
     res.status(200).json(result.rows);
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ✅ POST — yangi kunlik ish haqi qo‘shish
 router.post('/', verifyToken, async (req, res) => {

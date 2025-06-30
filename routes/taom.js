@@ -56,6 +56,42 @@ router.post('/:taomId/ingredient', async (req, res) => {
   }
 });
 
+// POST /taom/ishlatish
+router.post('/ishlatish', async (req, res) => {
+  const { taom_id, sana, bolalar_soni } = req.body;
+
+  try {
+    // 1. Ingredientlarni olish
+    const result = await db.query(`
+      SELECT sklad_product_id, miqdor 
+      FROM taom_ingredient 
+      WHERE taom_id = $1
+    `, [taom_id]);
+
+    const ingredients = result.rows;
+
+    // 2. Har bir ingredient uchun hajm = miqdor * bolalar_soni
+    for (let ing of ingredients) {
+      const hajm = ing.miqdor * bolalar_soni;
+
+      await db.query(`
+        INSERT INTO chiqim_ombor (hajm, sklad_product_id, description, chiqim_sana)
+        VALUES ($1, $2, $3, $4)
+      `, [
+        hajm,
+        ing.sklad_product_id,
+        `Taom ID: ${taom_id} bo‘yicha ${bolalar_soni} bola uchun`,
+        sana
+      ]);
+    }
+
+    res.status(200).json({ message: "Mahsulotlar chiqim_ombor jadvaliga saqlandi" });
+  } catch (error) {
+    console.error("Server xatolik:", error);
+    res.status(500).json({ error: "Chiqim yozishda xatolik" });
+  }
+});
+
 // READ ALL
 router.get('/', async (req, res) => {
   try {

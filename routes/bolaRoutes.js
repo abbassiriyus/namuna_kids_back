@@ -126,6 +126,28 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
+router.put('/:id/toggle-active', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Hozirgi holatini olish
+    const result = await pool.query('SELECT is_active FROM bola WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Bola topilmadi' });
+    }
+
+    const current = result.rows[0].is_active;
+    const updated = !current;
+
+    // Yangilash
+    await pool.query('UPDATE bola SET is_active = $1 WHERE id = $2', [updated, id]);
+
+    res.json({ message: 'Holat muvaffaqiyatli yangilandi', is_active: updated });
+  } catch (err) {
+    console.error('Toggle is_active xatolik:', err);
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
 // ❌ DELETE: bolani o‘chirish
 router.delete('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;

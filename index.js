@@ -2,6 +2,8 @@ const express = require('express');
 const fileUpload = require("express-fileupload");
 const cors = require('cors');
 const bolaKunRoutes = require('./routes/bola_kun');
+const bolaKunAllRoutes = require('./routes/bola_kun_all');
+
 const adminRoutes = require('./routes/adminRoutes')
 const lavozimRoutes = require('./routes/lavozimRoutes');
 const xodimRoutes = require('./routes/xodimRoutes');
@@ -21,6 +23,7 @@ const chiqimOmborRouter = require('./routes/chiqimOmbor');
 const chiqimQoshimchaRouter = require('./routes/chiqimQoshimcha');
 const taomRoutes = require('./routes/taom');
 const taom_ingredientRoutes = require('./routes/taom_ingredient');
+const daromatTypeRoutes = require('./routes/daromat_type');
 const app = express();
 const port = 4000;
 
@@ -49,9 +52,12 @@ app.use('/kirim_maishiy', kirimMaishiyRouter);
 app.use('/chiqim_ombor', chiqimOmborRouter);
 app.use('/chiqim_qoshimcha', chiqimQoshimchaRouter);
 app.use('/bola_kun', bolaKunRoutes);
+app.use('/bola_kun_all', bolaKunAllRoutes);
+
 app.use('/darssana', darssanaRoutes);
 app.use('/taom', taomRoutes);
 app.use('/taom_ingredient', taom_ingredientRoutes);
+app.use('/daromat_type', daromatTypeRoutes);
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);

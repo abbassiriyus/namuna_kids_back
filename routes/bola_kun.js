@@ -32,13 +32,16 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET ALL (with optional month filter) - GET /bola_kun?month=YYYY-MM
 router.get('/', async (req, res) => {
   const { month } = req.query;
   try {
     if (month) {
+      const [year, monthNum] = month.split('-');
       const startDate = `${month}-01`;
-      const endDate = `${month}-31`;
+
+      // JS: yangi oy 0-indeksli, shuning uchun (monthNum) emas (monthNum - 1)
+      const endDateObj = new Date(year, parseInt(monthNum), 0); // 0 => oldingi oyning oxirgi kuni
+      const endDate = endDateObj.toISOString().slice(0, 10);
 
       const result = await pool.query(
         `SELECT * FROM bola_kun WHERE created_at BETWEEN $1 AND $2 ORDER BY created_at DESC`,
@@ -54,6 +57,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 // GET ONE - GET /bola_kun/:id
 router.get('/:id', async (req, res) => {

@@ -49,23 +49,24 @@ CREATE TABLE kunlik(
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TABLE oylik_type(
+CREATE TABLE oylik_type (
   id SERIAL PRIMARY KEY,
-  oylik_type BOOLEAN DEFAULT FALSE,
+  xodim_id INT NOT NULL,
+  narx NUMERIC(12, 2) NOT NULL, -- 12 ta raqam, 2ta verguldan keyin
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE sklad_product(
     id SERIAL PRIMARY KEY,
     nomi VARCHAR(100) NOT NULL,  --kartoshka
-    hajm integer NOT NULL,  --1
+    hajm NUMERIC(12, 2) NOT NULL,  --1
     hajm_birlik VARCHAR(50) NOT NULL, --kg
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE sklad_product_taktic(
     id SERIAL PRIMARY KEY,
-    hajm integer NOT NULL, --yangi qoshilayapgan maxsulot
+    hajm NUMERIC(12, 2) NOT NULL, --yangi qoshilayapgan maxsulot
     sklad_product_id integer NOT NULL, --qaysi productga tegishli
     narx integer NOT NULL,
     description TEXT,
@@ -81,7 +82,7 @@ CREATE TABLE chiqim_qoshimcha(
 )
 CREATE TABLE chiqim_ombor (
     id SERIAL PRIMARY KEY,
-    hajm INTEGER NOT NULL, -- yangi qo‘shilayotgan mahsulot
+    hajm NUMERIC(12, 2) NOT NULL, -- yangi qo‘shilayotgan mahsulot
     sklad_product_id INTEGER NOT NULL, -- qaysi productga tegishli
     description TEXT,
     chiqim_sana TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -123,7 +124,14 @@ updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 CREATE TABLE darssana (
   id SERIAL PRIMARY KEY,
   mavzu VARCHAR(150) NOT NULL,
-  sana DATE NOT NULL
+  sana DATE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE bola_kuni_all (
+  id SERIAL PRIMARY KEY,
+  mavzu VARCHAR(150) NOT NULL,
+  sana DATE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -135,6 +143,15 @@ CREATE TABLE bola_kun (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (bola_id, darssana_id)
+);
+CREATE TABLE daromat_type (
+  id SERIAL PRIMARY KEY,
+  bola_id INT NOT NULL,
+  sana DATE NOT NULL, -- oy va yil uchun (masalan 2024-06-01)
+  naqt INT DEFAULT 0,
+  karta INT DEFAULT 0,
+  prichislena INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE bola(
  id SERIAL PRIMARY KEY,
@@ -238,3 +255,7 @@ GRANT USAGE, SELECT ON SEQUENCE darssana_id_seq TO abbasuz3_user;
 ALTER SEQUENCE bola_kun_id_seq OWNED BY bola_kun.id;
 GRANT USAGE, SELECT ON SEQUENCE bola_kun_id_seq TO abbasuz3_user;
 
+ALTER SEQUENCE daromat_type_id_seq OWNED BY daromat_type.id;
+GRANT USAGE, SELECT ON SEQUENCE daromat_type_id_seq TO abbasuz3_user;
+ALTER SEQUENCE bola_kuni_all_id_seq OWNED BY bola_kuni_all.id;
+GRANT USAGE, SELECT ON SEQUENCE bola_kuni_all_id_seq TO abbasuz3_user;
