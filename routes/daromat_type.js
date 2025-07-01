@@ -3,13 +3,28 @@ const router = express.Router();
 const pool = require('../db'); // PostgreSQL ulanishi
 
 // ✅ GET - Barcha daromat_type yozuvlar
+// ✅ GET - Yil va oy bo‘yicha daromat_type yozuvlari
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM daromat_type ORDER BY sana DESC');
-    res.json(result.rows);
+    const { year, month } = req.query;
+
+    let query = 'SELECT * FROM daromat_type';
+    const values = [];
+
+    // Agar year va month berilgan bo‘lsa, filtr qo‘shiladi
+    if (year && month) {
+      query += ' WHERE TO_CHAR(sana, \'YYYY-MM\') = $1';
+      const yearMonth = `${year}-${month.padStart(2, '0')}`; // masalan: "2025-06"
+      values.push(yearMonth);
+    }
+
+    query += ' ORDER BY sana DESC NULLS LAST';
+
+    const { rows } = await pool.query(query, values);
+    res.status(200).json(rows);
   } catch (error) {
-    console.error('GET daromat_type:', error);
-    res.status(500).json({ error: 'Serverda xatolik' });
+    console.error('GET /daromat_type:', error.message);
+    res.status(500).json({ error: 'Serverda xatolik yuz berdi' });
   }
 });
 

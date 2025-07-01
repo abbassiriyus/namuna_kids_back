@@ -10,7 +10,7 @@ router.post('/', async (req, res) => {
     const today = new Date().toISOString().slice(0, 10);
 
     // 2. Dars sanasini tekshiramiz
-    const check = await pool.query(`SELECT sana FROM darssana WHERE id = $1`, [darssana_id]);
+    const check = await pool.query(`SELECT sana FROM bola_kuni_all WHERE id = $1`, [darssana_id]);
     if (check.rows.length === 0) {
       return res.status(404).json({ error: 'Dars topilmadi' });
     }
@@ -32,6 +32,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+// GET ALL (with optional month filter) - GET /bola_kun?month=YYYY-MM
 router.get('/', async (req, res) => {
   const { month } = req.query;
   try {
@@ -80,7 +81,7 @@ router.put('/:id', async (req, res) => {
     const today = new Date().toISOString().slice(0, 10);
 
     // 1. Dars sanasini tekshiramiz
-    const check = await pool.query(`SELECT sana FROM darssana WHERE id = $1`, [darssana_id]);
+    const check = await pool.query(`SELECT sana FROM bola_kuni_all WHERE id = $1`, [darssana_id]);
     if (check.rows.length === 0) {
       return res.status(404).json({ error: 'Dars topilmadi' });
     }

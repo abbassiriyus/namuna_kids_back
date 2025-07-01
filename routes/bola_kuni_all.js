@@ -4,52 +4,30 @@ const pool = require('../db'); // PostgreSQL poolni chaqiramiz
 
 // CREATE - POST /bola_kuni_all
 router.post('/', async (req, res) => {
-  const { mavzu, sana } = req.body;
+  const { sana, mavzu } = req.body;
   try {
-    const result = await pool.query(
-      `INSERT INTO bola_kuni_all (mavzu, sana) VALUES ($1, $2) RETURNING *`,
-      [mavzu, sana]
-    );
-    res.status(201).json(result.rows[0]);
+    const result = await pool.query(`
+      INSERT INTO bola_kuni_all (sana, mavzu) VALUES ($1, $2) RETURNING *
+    `, [sana, mavzu]);
+    res.json(result.rows[0]);
   } catch (err) {
-    console.error('bola_kuni_all create error:', err.message);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
 
+
 // GET /bola_kuni_all?month=YYYY-MM
 router.get('/', async (req, res) => {
-  const { month } = req.query;
-
+  const { month, year } = req.query;
   try {
-    if (month) {
-      // month formatini tekshirish (YYYY-MM)
-      if (!/^\d{4}-\d{2}$/.test(month)) {
-        return res.status(400).json({ error: 'Invalid month format. Use YYYY-MM.' });
-      }
-
-      const year = month.split('-')[0];
-      const monthNum = parseInt(month.split('-')[1], 10);
-
-      // oydagi maksimal kunni aniqlash
-      const lastDay = new Date(year, monthNum, 0).getDate();
-      const startDate = `${month}-01`;
-      const endDate = `${month}-${lastDay}`;
-
-      const result = await pool.query(
-        `SELECT * FROM bola_kuni_all WHERE sana BETWEEN $1 AND $2 ORDER BY sana DESC`,
-        [startDate, endDate]
-      );
-      return res.json(result.rows);
-    }
-
-    // agar month bo‘lmasa, barcha malumot
-    const result = await pool.query(`SELECT * FROM bola_kuni_all ORDER BY sana DESC`);
+    const result = await pool.query(`
+      SELECT * FROM bola_kuni_all
+      WHERE EXTRACT(MONTH FROM sana) = $1 AND EXTRACT(YEAR FROM sana) = $2
+    `, [month, year]);
     res.json(result.rows);
   } catch (err) {
-    console.error('bola_kuni_all fetch error:', err.message);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -84,34 +62,18 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-  const client = await pool.connect();
-
+router.delete('/', async (req, res) => {
+  const { sana } = req.body;
   try {
-    await client.query('BEGIN');
-
-    // Avval bola_kun yozuvlarini o‘chiramiz
-    await client.query(`DELETE FROM bola_kun WHERE bola_kuni_all_id = $1`, [id]);
-
-    // So‘ngra bola_kuni_all ni o‘chiramiz
-    const result = await client.query(`DELETE FROM bola_kuni_all WHERE id = $1 RETURNING *`, [id]);
-
-    if (result.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'Not found' });
-    }
-
-    await client.query('COMMIT');
-    res.json({ message: 'Dars va unga bog‘langan davomatlar o‘chirildi' });
+    const result = await pool.query(`
+      DELETE FROM bola_kuni_all WHERE sana = $1 RETURNING *
+    `, [sana]);
+    res.json({ message: 'Deleted', date: sana });
   } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('bola_kuni_all delete error:', err.message);
-    res.status(500).json({ error: 'Server error' });
-  } finally {
-    client.release();
+    res.status(500).json({ error: err.message });
   }
 });
+
 
 
 module.exports = router;
