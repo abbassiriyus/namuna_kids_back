@@ -46,13 +46,13 @@ router.get('/bola/:bola_id/:yearMonth', async (req, res) => {
 
 // ✅ POST - Yangi daromat yozuvi qo‘shish
 router.post('/', async (req, res) => {
-  const { bola_id, sana, naqt = 0, karta = 0, prichislena = 0 } = req.body;
+  const { bola_id, sana, naqt = 0, karta = 0, prichislena = 0,naqt_prichislena=0 } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO daromat_type (bola_id, sana, naqt, karta, prichislena)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO daromat_type (bola_id, sana, naqt, karta, prichislena,naqt_prichislena)
+       VALUES ($1, $2, $3, $4, $5,$6)
        RETURNING *`,
-      [bola_id, sana, naqt, karta, prichislena]
+      [bola_id, sana, naqt, karta, prichislena,naqt_prichislena]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -64,14 +64,14 @@ router.post('/', async (req, res) => {
 // ✅ PUT - Ma’lumotni yangilash
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { naqt = 0, karta = 0, prichislena = 0 } = req.body;
+  const { naqt = 0, karta = 0, prichislena = 0,naqt_prichislena=0 } = req.body;
   try {
     const result = await pool.query(
       `UPDATE daromat_type
-       SET naqt = $1, karta = $2, prichislena = $3, updated_at = NOW()
-       WHERE id = $4
+       SET naqt = $1, karta = $2, prichislena = $3,naqt_prichislena=$4 updated_at = NOW()
+       WHERE id = $5
        RETURNING *`,
-      [naqt, karta, prichislena, id]
+      [naqt, karta, prichislena,naqt_prichislena, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Topilmadi' });

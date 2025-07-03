@@ -151,6 +151,7 @@ CREATE TABLE daromat_type (
   naqt INT DEFAULT 0,
   karta INT DEFAULT 0,
   prichislena INT DEFAULT 0,
+  naqt_prichislena INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE bola(
